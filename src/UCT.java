@@ -3,7 +3,7 @@ public class UCT {
     private Game game;
     private Node root;
 
-    public UCT(Game game){
+    UCT(Game game){
         this.game = game;
     }
 
@@ -13,8 +13,8 @@ public class UCT {
         if(moves == null){
             root = new Node(game.white, game.black);
         } else {
-            for(int i = 0; i < moves.length; i++){
-                root = root.getChild(moves[i]);
+            for (int move : moves) {
+                root = root.getChild(move);
             }
             if(root == null){
                 root = new Node(game.white, game.black);
@@ -61,7 +61,7 @@ public class UCT {
 
             if(result != -1){
                 expanded.setTerminal(true);
-                expanded.setTerminalValue(result, 1, this);
+                expanded.setTerminalValue(result, 1);
             } else {
                 result = game.simulate(expanded.b.white, expanded.b.black, expanded.b.toMove, expanded.lastMove,
                         expanded
@@ -93,6 +93,7 @@ public class UCT {
                 bestChild = c;
             }
         }
+        if(bestChild == null) return -1;
         System.out.println("----------------------------------------------------------------------------------");
         System.out.println(String.format("%-" + 4 + "s", bestChild.getLastMove()+":")+ " q-value: " + String.format
                 ("%-8.3f", bestChild.wins/bestChild.visits));

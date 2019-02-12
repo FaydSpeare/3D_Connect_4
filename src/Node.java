@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Node implements Comparable<Node> {
+public class Node {
 
     private static SplittableRandom rand = new SplittableRandom();
 
@@ -26,7 +26,7 @@ public class Node implements Comparable<Node> {
     // Board Representation
     public Board b;
 
-    public Node(Node parent, int move){
+    private Node(Node parent, int move){
         this.parent = parent;
         this.lastMove = move;
 
@@ -123,7 +123,7 @@ public class Node implements Comparable<Node> {
         return move;
     }
 
-    public Node(long white, long black){
+    Node(long white, long black){
         this.b = new Board(white, black, true);
 
         this.parent = null;
@@ -154,42 +154,33 @@ public class Node implements Comparable<Node> {
     private int childrenTerminalSum;
     public int terminalDepth;
 
-    public void setTerminalValue(int terminalValue, int depth, UCT u) {
+    public void setTerminalValue(int terminalValue, int depth) {
         this.terminalValue = terminalValue;
         this.terminalDepth = depth;
         this.terminal = true;
-
-        boolean top = true;
-
-
 
         if(parent != null){
             depth++;
 
             if(parent.b.toMove){
                 if(terminalValue == 2) {
-                    parent.setTerminalValue(terminalValue, depth, u);
-                    top = false;
-
+                    parent.setTerminalValue(terminalValue, depth);
                 }
                 else if(terminalValue == -2){
                     parent.childrenTerminalSum += terminalValue;
                     if(parent.childrenTerminalSum / parent.children.size() == -2){
-                        parent.setTerminalValue(terminalValue, depth, u);
-                        top = false;
+                        parent.setTerminalValue(terminalValue, depth);
                     }
                 }
             }
             else {
                 if(terminalValue == -2) {
-                    parent.setTerminalValue(terminalValue, depth, u);
-                    top = false;
+                    parent.setTerminalValue(terminalValue, depth);
                 }
                 else if(terminalValue == 2){
                     parent.childrenTerminalSum += terminalValue;
                     if(parent.childrenTerminalSum / parent.children.size() == 2){
-                        parent.setTerminalValue(terminalValue, depth, u);
-                        top = false;
+                        parent.setTerminalValue(terminalValue, depth);
                     }
                 }
             }
@@ -216,8 +207,4 @@ public class Node implements Comparable<Node> {
         return null;
     }
 
-    @Override
-    public int compareTo(Node o) {
-        return (int)(((o.wins+1)/o.visits) - ((this.wins+1)/this.visits));
-    }
 }
