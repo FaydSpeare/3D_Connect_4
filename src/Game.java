@@ -4,7 +4,7 @@ public class Game {
 
     public long white;
     public long black;
-    private boolean toMove;
+    public boolean toMove;
 
     private final int[][] fours = new int[][]{
             {0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}, {12, 13, 14, 15}, // h1
@@ -38,6 +38,14 @@ public class Game {
     private Map<Integer, int[][]> checks;
 
     private SplittableRandom rand;
+
+    public Game(int i){
+        this.white = 0x0000_0000_0000_0000L;
+        this.black = 0x0000_0000_0000_0000L;
+        this.toMove = true;
+
+        this.rand = new SplittableRandom();
+    }
 
     public Game(){
         this.white = 0x0000_0000_0000_0000L;
@@ -93,18 +101,18 @@ public class Game {
 
             // If Black to Move, Check if White won.
             if(!toMove) {
-                if ((white & (1L << array[2])) >>> array[2] == 1L) {
+                if ((white & (1L << array[0])) >>> array[0] == 1L) {
                     if ((white & (1L << array[1])) >>> array[1] == 1L) {
-                        if ((white & (1L << array[0])) >>> array[0] == 1L) {
+                        if ((white & (1L << array[2])) >>> array[2] == 1L) {
                             return 2;
                         }
                     }
                 }
             }
             else {
-                if ((black & (1L << array[2])) >>> array[2] == 1L) {
+                if ((black & (1L << array[0])) >>> array[0] == 1L) {
                     if ((black & (1L << array[1])) >>> array[1] == 1L) {
-                        if ((black & (1L << array[0])) >>> array[0] == 1L) {
+                        if ((black & (1L << array[2])) >>> array[2] == 1L) {
                             return -2;
                         }
                     }
@@ -208,6 +216,35 @@ public class Game {
         return false;
     }
 
+    public int result(long white, long black){
+        if(Long.lowestOneBit(~(black | white)) == 0){
+            return 0;
+        }
+
+        for(int[] array: fours){
+
+            if ((white & (1L << array[3])) >>> array[3] == 1L) {
+                if ((white & (1L << array[2])) >>> array[2] == 1L) {
+                    if ((white & (1L << array[1])) >>> array[1] == 1L) {
+                        if ((white & (1L << array[0])) >>> array[0] == 1L) {
+                            return 2;
+                        }
+                    }
+                }
+            }
+            if ((black & (1L << array[3])) >>> array[3] == 1L) {
+                if ((black & (1L << array[2])) >>> array[2] == 1L) {
+                    if ((black & (1L << array[1])) >>> array[1] == 1L) {
+                        if ((black & (1L << array[0])) >>> array[0] == 1L) {
+                            return -2;
+                        }
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
     public void printBoard(){
         StringBuilder sb = new StringBuilder();
 
@@ -232,5 +269,48 @@ public class Game {
             System.out.println(board.substring(i*16 + 12, i*16 + 16));
         }
     }
+
+    public static void main(String[] args){
+
+        Random rand = new Random();
+
+        double time = System.currentTimeMillis();
+        int k = 0;
+        for(int i = 0; i < 10000; i++){
+            Game game = new Game(1);
+
+
+            while(!game.isTerminal(game.white, game.black)){
+                List<Integer> moves = getMoves(game.white, game.black);
+                game.makeMove(moves.get(rand.nextInt(moves.size())));
+                k++;
+            }
+
+        }
+        System.out.println(k/100000);
+        System.out.println((System.currentTimeMillis() - time));
+
+        /*
+
+         */
+    }
+
+    public List<Integer> get_moves(){
+        long com = (white | black);
+        int size = 16-Long.bitCount(com >>> 48);
+        List<Integer> moves = new ArrayList<>(size);
+        com = ~com;
+        for(int i = 0; i < 16; i++){
+            for(int j = 0; j < 4; j++){
+                int shift = i + 16*j;
+                if((com & (1L << shift)) >>> shift == 1L){
+                    moves.add(shift);
+                    break;
+                }
+            }
+        }
+        return moves;
+    }
+
 
 }

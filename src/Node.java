@@ -123,8 +123,8 @@ public class Node {
         return move;
     }
 
-    Node(long white, long black){
-        this.b = new Board(white, black, true);
+    Node(long white, long black, boolean turn){
+        this.b = new Board(white, black, turn);
 
         this.parent = null;
 

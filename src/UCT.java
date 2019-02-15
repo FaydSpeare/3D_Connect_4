@@ -11,13 +11,13 @@ public class UCT {
 
         int nodes = 0;
         if(moves == null){
-            root = new Node(game.white, game.black);
+            root = new Node(game.white, game.black, game.toMove);
         } else {
             for (int move : moves) {
                 root = root.getChild(move);
             }
             if(root == null){
-                root = new Node(game.white, game.black);
+                root = new Node(game.white, game.black, game.toMove);
             } else {
                 root.parent = null;
                 nodes = (int)root.visits;
