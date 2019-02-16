@@ -28,14 +28,17 @@ public class UCT {
         double time = System.currentTimeMillis();
         double duration = 0;
         int it = 0;
+        double limit = 1000*allowedTime;
 
         int maxDepth = 0;
-        while( duration <= allowedTime){
+        int depth;
+        Node node;
+        Node expanded;
+        while( duration < limit){
             it++; // O(1)
-            duration = (System.currentTimeMillis() - time)/1000; // O(1)
-            Node node = root; // O(1)
+            node = root; // O(1)
 
-            int depth = 0;
+            depth = 0;
             while(node.isNotExpandable()){ // O(1)
                 node = node.selectChild(); // O(n) n = 16
                 depth++;
@@ -43,9 +46,7 @@ public class UCT {
                     break;
                 }
             }
-            if(depth > maxDepth){
-                maxDepth = depth;
-            }
+            if(depth > maxDepth) maxDepth = depth;
 
             if(node != root){
                 if(node.isTerminal()){ // recall value O(1)
@@ -54,21 +55,20 @@ public class UCT {
                 }
             }
 
-            Node expanded = node.makeMove(node.getRandomMove()); // get is O(n)
+            expanded = node.makeMove(node.getRandomMove()); // get is O(n)
 
-            int result = game.isTerminal_lastMove(expanded.b.white, expanded.b.black, expanded.b.toMove, expanded
-                    .lastMove);
+            int result = game.isTerminal_lastMove(expanded.b.white, expanded.b.black,
+                    expanded.b.toMove, expanded.lastMove);
 
             if(result != -1){
                 expanded.setTerminal(true);
                 expanded.setTerminalValue(result, 1);
             } else {
                 result = game.simulate(expanded.b.white, expanded.b.black, expanded.b.toMove, expanded.lastMove,
-                        expanded
-                        .MOVES);
+                        expanded.MOVES);
             }
             expanded.update(result);
-
+            duration = (System.currentTimeMillis() - time);
         }
 
         //// PRINTS OUT TURN INFORMATION ///
