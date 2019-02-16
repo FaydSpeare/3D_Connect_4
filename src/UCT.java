@@ -36,7 +36,7 @@ public class UCT {
             Node node = root; // O(1)
 
             int depth = 0;
-            while(!node.isExpandable()){ // O(1)
+            while(node.isNotExpandable()){ // O(1)
                 node = node.selectChild(); // O(n) n = 16
                 depth++;
                 if(node.isTerminal()){ // if is terminal O(1)

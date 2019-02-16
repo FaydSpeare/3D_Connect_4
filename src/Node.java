@@ -33,34 +33,28 @@ public class Node {
         this.MOVES = new ArrayList<>();
         for(int i = 0; i < parent.MOVES.size(); i++){
             int m = parent.MOVES.get(i);
-            if(m != move){
-                this.MOVES.add(m);
-            }
+            if(m != move) this.MOVES.add(m);
         }
 
         this.toExplore = new ArrayList<>(this.MOVES);
 
         this.b = new Board(parent.b);
-
-        this.children = new ArrayList<>();
     }
 
     public void update(int value){
         this.wins += value;
         this.visits++;
-
-        if(parent != null){
-            parent.update(value);
-        }
+        if(parent != null) parent.update(value);
     }
 
     public Node selectChild(){
         Node best = null;
         double bestUCT = children.get(0).uct();
+        double uct;
 
         if(!b.toMove){
             for(Node child: children){
-                double uct = child.uct();
+                uct = child.uct();
                 if(uct <= bestUCT){
                     bestUCT = uct;
                     best = child;
@@ -68,7 +62,7 @@ public class Node {
             }
         } else {
             for(Node child: children){
-                double uct = child.uct();
+                uct = child.uct();
                 if(uct >= bestUCT){
                     bestUCT = uct;
                     best = child;
@@ -87,8 +81,8 @@ public class Node {
         return this.wins/this.visits + expand;
     }
 
-    public boolean isExpandable(){
-        return !toExplore.isEmpty();
+    public boolean isNotExpandable(){
+        return toExplore.isEmpty();
     }
 
     public Node makeMove(int move){
@@ -99,13 +93,11 @@ public class Node {
             creation.toExplore.add(newMove);
             creation.MOVES.add(newMove);
         }
+        creation.children = new ArrayList<>(toExplore.size());
 
         //make move on bit board
-        if(this.b.toMove){
-            creation.b.white |= (1L << move);
-        } else {
-            creation.b.black |= (1L << move);
-        }
+        if(this.b.toMove) creation.b.white |= (1L << move);
+        else creation.b.black |= (1L << move);
 
         // change turn
         creation.b.toMove = !this.b.toMove;
@@ -125,18 +117,14 @@ public class Node {
 
     Node(long white, long black, boolean turn){
         this.b = new Board(white, black, turn);
-
         this.parent = null;
-
         MOVES = new ArrayList<>();
 
         MOVES = Game.getMoves(white, black);
 
         toExplore = new ArrayList<>(MOVES);
 
-
-        this.children = new ArrayList<>();
-
+        this.children = new ArrayList<>(MOVES.size());
     }
 
     public void setTerminal(boolean terminal) {
@@ -161,33 +149,21 @@ public class Node {
 
         if(parent != null){
             depth++;
-
             if(parent.b.toMove){
-                if(terminalValue == 2) {
-                    parent.setTerminalValue(terminalValue, depth);
-                }
+                if(terminalValue == 2) parent.setTerminalValue(terminalValue, depth);
                 else if(terminalValue == -2){
                     parent.childrenTerminalSum += terminalValue;
-                    if(parent.childrenTerminalSum / parent.children.size() == -2){
-                        parent.setTerminalValue(terminalValue, depth);
-                    }
+                    if(parent.childrenTerminalSum / parent.children.size() == -2)parent.setTerminalValue(terminalValue, depth);
                 }
             }
             else {
-                if(terminalValue == -2) {
-                    parent.setTerminalValue(terminalValue, depth);
-                }
+                if(terminalValue == -2) parent.setTerminalValue(terminalValue, depth);
                 else if(terminalValue == 2){
                     parent.childrenTerminalSum += terminalValue;
-                    if(parent.childrenTerminalSum / parent.children.size() == 2){
-                        parent.setTerminalValue(terminalValue, depth);
-                    }
+                    if(parent.childrenTerminalSum / parent.children.size() == 2)parent.setTerminalValue(terminalValue, depth);
                 }
             }
         }
-
-
-
     }
 
     public List<Node> getChildren() {
@@ -200,11 +176,8 @@ public class Node {
 
     public Node getChild(int move){
         for(Node child: children){
-            if(child.lastMove == move){
-                return child;
-            }
+            if(child.lastMove == move) return child;
         }
         return null;
     }
-
 }

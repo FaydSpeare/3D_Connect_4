@@ -2,6 +2,8 @@ import java.util.*;
 
 public class Game {
 
+    private static final long FIRST = 0xFFFF;
+
     public long white;
     public long black;
     public boolean toMove;
@@ -47,7 +49,7 @@ public class Game {
         this.rand = new SplittableRandom();
     }
 
-    public Game(){
+    Game(){
         this.white = 0x0000_0000_0000_0000L;
         this.black = 0x0000_0000_0000_0000L;
         this.toMove = true;
@@ -93,34 +95,31 @@ public class Game {
 
     public int isTerminal_lastMove(long white, long black, boolean toMove, int lastMove){
 
-        if(Long.lowestOneBit(~(black | white)) == 0){
-            return 0;
-        }
+        //if(Long.lowestOneBit(~(black | white)) == 0) return 0;
+        if(~(black | white) == 0L) return 0;
 
-        for(int[] array: checks.get(lastMove)){
-
-            // If Black to Move, Check if White won.
-            if(!toMove) {
-                if ((white & (1L << array[0])) >>> array[0] == 1L) {
+        if(!toMove){
+            for(int[] array: checks.get(lastMove)) {
+                // If Black to Move, Check if White won.
+                if ((white & (1L << array[2])) >>> array[2] == 1L) {
                     if ((white & (1L << array[1])) >>> array[1] == 1L) {
-                        if ((white & (1L << array[2])) >>> array[2] == 1L) {
+                        if ((white & (1L << array[0])) >>> array[0] == 1L) {
                             return 2;
                         }
                     }
                 }
             }
-            else {
-                if ((black & (1L << array[0])) >>> array[0] == 1L) {
+        } else {
+            for(int[] array: checks.get(lastMove)) {
+                if ((black & (1L << array[2])) >>> array[2] == 1L) {
                     if ((black & (1L << array[1])) >>> array[1] == 1L) {
-                        if ((black & (1L << array[2])) >>> array[2] == 1L) {
+                        if ((black & (1L << array[0])) >>> array[0] == 1L) {
                             return -2;
                         }
                     }
                 }
             }
         }
-
-
         return -1;
     }
 
@@ -131,34 +130,26 @@ public class Game {
 
         while((result = isTerminal_lastMove(white, black, toMove, lastMove)) == -1){
 
-
             int randIndex = rand.nextInt(movesCopy.size());
             int randMove = movesCopy.get(randIndex);
             lastMove = randMove;
 
-            //trickery
             movesCopy.set(randIndex, movesCopy.get(movesCopy.size()-1));
-            //trickery
 
-            if(toMove){
-                white |= (1L << randMove);
-            } else {
-                black |= (1L << randMove);
-            }
-
+            if(toMove) white |= (1L << randMove);
+            else black |= (1L << randMove);
             toMove = !toMove;
 
             movesCopy.remove(movesCopy.size()-1);
 
-            if(randMove < 48){
-                movesCopy.add(randMove + 16);
-            }
+            if(randMove < 48) movesCopy.add(randMove + 16);
+
         }
 
         return result;
     }
 
-    public static List<Integer> getMoves(long white, long black){
+    public static List<Integer> getMoves2(long white, long black){
         long com = (white | black);
         int size = 16-Long.bitCount(com >>> 48);
         List<Integer> moves = new ArrayList<>(size);
@@ -175,20 +166,26 @@ public class Game {
         return moves;
     }
 
-    public void makeMove(int move){
-        if(toMove){
-            this.white |= (1L << move);
-        } else {
-            this.black |= (1L << move);
+    public static List<Integer> getMoves(long white, long black){
+        long com = (white | black);
+        List<Integer> moves = new ArrayList<>(16-Long.bitCount(com >>> 48));
+        com = com ^ ((com << 16) | FIRST);
+        while(com != 0){
+            moves.add(Long.numberOfTrailingZeros(com));
+            com ^= Long.lowestOneBit(com);
         }
+        return moves;
+    }
+
+    public void makeMove(int move){
+        if(toMove) this.white |= (1L << move);
+        else this.black |= (1L << move);
         toMove = !toMove;
     }
 
     public boolean isTerminal(long white, long black){
 
-        if(0L == ~(black | white)){
-            return true;
-        }
+        if(0L == ~(black | white)) return true;
 
         for(int[] array: fours){
 
@@ -270,32 +267,7 @@ public class Game {
         }
     }
 
-    public static void main(String[] args){
-
-        Random rand = new Random();
-
-        double time = System.currentTimeMillis();
-        int k = 0;
-        for(int i = 0; i < 10000; i++){
-            Game game = new Game(1);
-
-
-            while(!game.isTerminal(game.white, game.black)){
-                List<Integer> moves = getMoves(game.white, game.black);
-                game.makeMove(moves.get(rand.nextInt(moves.size())));
-                k++;
-            }
-
-        }
-        System.out.println(k/100000);
-        System.out.println((System.currentTimeMillis() - time));
-
-        /*
-
-         */
-    }
-
-    public List<Integer> get_moves(){
+    private List<Integer> get_moves(){
         long com = (white | black);
         int size = 16-Long.bitCount(com >>> 48);
         List<Integer> moves = new ArrayList<>(size);
@@ -310,6 +282,35 @@ public class Game {
             }
         }
         return moves;
+    }
+
+    private List<Integer> get_moves2(){
+        long com = (white | black);
+        int size = 16-Long.bitCount(com >>> 48);
+        List<Integer> moves = new ArrayList<>(size);
+        com = com ^ ((com << 16) | 0xFFFF);
+
+        while(com != 0){
+            moves.add(Long.numberOfTrailingZeros(com));
+            com ^= Long.lowestOneBit(com);
+        }
+
+        return moves;
+    }
+
+    public static void main(String[] args){
+        Game game = new Game();
+        double time = System.currentTimeMillis();
+
+        for(int i = 0; i < 500000; i++){
+            game.get_moves();
+        }
+
+
+        System.out.println((System.currentTimeMillis()-time)/1000);
+
+        List<Integer> a = new ArrayList<>(2);
+        System.out.println(a.size());
     }
 
 
