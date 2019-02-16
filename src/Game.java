@@ -149,7 +149,7 @@ public class Game {
         return result;
     }
 
-    public static List<Integer> getMoves2(long white, long black){
+    public static List<Integer> getMoves(long white, long black){
         long com = (white | black);
         int size = 16-Long.bitCount(com >>> 48);
         List<Integer> moves = new ArrayList<>(size);
@@ -166,7 +166,7 @@ public class Game {
         return moves;
     }
 
-    public static List<Integer> getMoves(long white, long black){
+    public static List<Integer> getMoves2(long white, long black){
         long com = (white | black);
         List<Integer> moves = new ArrayList<>(16-Long.bitCount(com >>> 48));
         com = com ^ ((com << 16) | FIRST);
