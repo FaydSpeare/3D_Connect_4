@@ -74,7 +74,7 @@ public class Node {
     }
 
     private double uct(){
-        double expand = Math.sqrt(3*Math.log(parent.visits)/this.visits);
+        double expand = Math.sqrt(4.5*Math.log(parent.visits)/this.visits);
         if(b.toMove){
             expand *= -1;
         }

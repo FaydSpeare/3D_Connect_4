@@ -48,8 +48,10 @@ public class Main {
             game.printBoard();
             Scanner in = new Scanner(System.in);
             System.out.println("Enter a move: ");
+            System.out.println("move read");
             move2 = in.nextInt();
             game.makeMove(move2);
+            System.out.println("move made");
         }
     }
 }

@@ -35,6 +35,7 @@ public class UCT {
         Node node;
         Node expanded;
         while( duration < limit){
+            if(it > 5000000) System.out.println("what");
             it++; // O(1)
             node = root; // O(1)
 
@@ -88,10 +89,18 @@ public class UCT {
                     q) + "~ " + "visits: "+String.format("%-" + 10 + "s", c.visits)+", wins: "+String.format("%-" + 10 +
                     "s", c.wins)+"" + " " + ", Tval: "+String.format("%-" + 4 + "s", c.terminalValue)+ ", Tdepth: "+c.terminalDepth);
 
-            if(q >= largest){
-                largest = q;
-                bestChild = c;
+            if(root.b.toMove){
+                if(q >= largest){
+                    largest = q;
+                    bestChild = c;
+                }
+            } else {
+                if(q <= largest){
+                    largest = q;
+                    bestChild = c;
+                }
             }
+
         }
         if(bestChild == null) return -1;
         System.out.println("----------------------------------------------------------------------------------");
